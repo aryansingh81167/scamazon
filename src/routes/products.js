@@ -17,15 +17,13 @@ router.get('/', (req, res) => {
 /**
  * GET /api/products/search
  * Search products by keyword
- * VULNERABILITY: SQL Injection via raw string concatenation (CWE-89)
  */
 router.get('/search', async (req, res) => {
   const searchTerm = req.query.q || '';
 
   try {
-    // VULNERABLE CODE (Triggers Sentinel SAST CWE-89 & DAST SQLi payloads):
-    const sql = "SELECT * FROM products WHERE name LIKE '%" + searchTerm + "%' OR description LIKE '%" + searchTerm + "%'";
-    const results = await db.query(sql);
+    const sql = "SELECT * FROM products WHERE name LIKE ? OR description LIKE ?";
+    const results = await db.query(sql, [`%${searchTerm}%`, `%${searchTerm}%`]);
 
     res.json({
       status: 'success',
