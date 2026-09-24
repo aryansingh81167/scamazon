@@ -3,7 +3,7 @@
  * WARNING: Sensitive production API keys and storage credentials
  */
 
-// Intentional Hardcoded Secrets for SAST & TruffleHog Detection (CWE-798)
+// Payment Gateway Credentials
 const STRIPE_SECRET_KEY = "sk_test_51MzScamAz0n992834823904820938402";
 const STRIPE_PUBLIC_KEY = "pk_test_51MzScamAz0n992834823904820938402";
 
