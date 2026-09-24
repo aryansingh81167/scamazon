@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { exec } = require('child_process');
+const { execFile } = require('child_process');
 
 /**
  * POST /api/shipping/ping-hub
@@ -10,12 +10,13 @@ const { exec } = require('child_process');
 router.post('/ping-hub', (req, res) => {
   const host = req.body.host || req.query.host || '127.0.0.1';
 
-  // VULNERABLE CODE (Direct string concatenation into shell process):
+  // REMEDIATED: Use execFile with an argument array to prevent shell injection.
   const command = "ping -n 1 " + host;
+  const args = ['-n', '1', host];
 
   console.log(`[Shipping Diagnostics] Executing command: ${command}`);
 
-  exec(command, { timeout: 5000 }, (error, stdout, stderr) => {
+  execFile('ping', args, { timeout: 5000 }, (error, stdout, stderr) => {
     if (error) {
       return res.status(500).json({
         status: 'error',
