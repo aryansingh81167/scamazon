@@ -3,7 +3,7 @@ const router = express.Router();
 const fs = require('fs');
 const path = require('path');
 
-const INVOICE_STORAGE_DIR = path.join(__dirname, '../../invoices');
+const INVOICE_STORAGE_DIR = path.resolve(__dirname, '../../invoices');
 
 // Ensure sample invoice directory and file exist
 if (!fs.existsSync(INVOICE_STORAGE_DIR)) {
@@ -21,13 +21,19 @@ if (!fs.existsSync(sampleInvoicePath)) {
 /**
  * GET /api/invoices/download
  * Download customer order invoice
- * VULNERABILITY: Path Traversal (Arbitrary File Read / CWE-22)
  */
 router.get('/download', (req, res) => {
   const fileName = req.query.file || 'INV-2026-001.txt';
 
-  // VULNERABLE CODE (Resolves path directly without checking if it stays within base directory):
-  const targetPath = path.join(INVOICE_STORAGE_DIR, fileName);
+  // SECURE CODE: Resolve the path and verify it is within the intended directory
+  const targetPath = path.resolve(INVOICE_STORAGE_DIR, fileName);
+
+  if (!targetPath.startsWith(INVOICE_STORAGE_DIR)) {
+    return res.status(403).json({
+      status: 'error',
+      message: 'Access denied'
+    });
+  }
 
   try {
     const fileContent = fs.readFileSync(targetPath, 'utf-8');
@@ -37,7 +43,6 @@ router.get('/download', (req, res) => {
     res.status(404).json({
       status: 'error',
       message: 'Invoice not found or unreadable',
-      pathAttempted: targetPath,
       error: error.message
     });
   }
