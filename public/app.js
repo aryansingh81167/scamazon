@@ -140,7 +140,7 @@ async function previewReviewXSS() {
   try {
     const res = await fetch(`/api/reviews/render?author=${encodeURIComponent(author)}&comment=${encodeURIComponent(comment)}`);
     const html = await res.text();
-    previewEl.innerHTML = html; // Demonstrates XSS trigger
+    previewEl.textContent = html; // Demonstrates XSS trigger
   } catch (err) {
     previewEl.innerText = 'Error: ' + err.message;
   }
