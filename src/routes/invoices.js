@@ -26,8 +26,16 @@ if (!fs.existsSync(sampleInvoicePath)) {
 router.get('/download', (req, res) => {
   const fileName = req.query.file || 'INV-2026-001.txt';
 
-  // VULNERABLE CODE (Resolves path directly without checking if it stays within base directory):
-  const targetPath = path.join(INVOICE_STORAGE_DIR, fileName);
+  // REMEDIATED: Resolve path and verify it stays within the intended directory
+  const baseDir = path.resolve(INVOICE_STORAGE_DIR);
+  const targetPath = path.resolve(baseDir, fileName);
+
+  if (!targetPath.startsWith(baseDir + path.sep)) {
+    return res.status(403).json({
+      status: 'error',
+      message: 'Access denied: Invalid file path'
+    });
+  }
 
   try {
     const fileContent = fs.readFileSync(targetPath, 'utf-8');
